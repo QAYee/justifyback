@@ -17,28 +17,38 @@ class User_model extends CI_Model {
 
     // Insert a new user
     public function insert_user($data) {
-        $this->db->insert('user', $data);
+        $this->db->insert('users', $data);
         return $this->db->affected_rows() > 0; // Return true if insert successful
     }
 
     // Fetch all users
     public function get_users() {
-        return $this->db->get('user')->result_array();
+        return $this->db->get('users')->result_array();
     }
 
     // Fetch a single user by ID
     public function get_user_id($id) {
         $this->db->where('id', $id);
         $this->db->where('Valid', 1);
-        $query = $this->db->get('user');
+        $query = $this->db->get('users');
         return $query->result();
     }
 
     // Update user details
   
     public function get_user_by_email($email) {
-        $query = $this->db->get_where('user', ['email' => $email]);
+        $query = $this->db->get_where('users', ['email' => $email]);
         return $query->row_array(); // ✅ Ensures it returns an array
+    }
+
+    // Fetch user by ID
+    public function get_user_by_id($user_id) {
+        $query = $this->db->select('name')
+                          ->from('users')
+                          ->where('id', $user_id)
+                          ->get();
+
+        return $query->row_array(); // Return user data as an associative array
     }
     
 }
