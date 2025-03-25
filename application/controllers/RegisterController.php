@@ -21,27 +21,39 @@ class RegisterController extends CI_Controller {
             exit();
         }
 
-        // Decode JSON input
+        // Get and decode JSON input
         $raw_data = file_get_contents("php://input");
-        error_log("Received Data: " . $raw_data); // Debugging log
+        error_log("Raw Input: " . $raw_data); // Debugging log
         $postData = json_decode($raw_data, true);
 
         if (!$postData) {
+            error_log("JSON Decode Error: " . json_last_error_msg()); // Log JSON error
             echo json_encode(["status" => "error", "message" => "Invalid request"]);
             return;
         }
 
         // Sanitize input
-        $full_name = $this->security->xss_clean($postData['full_name'] ?? '');
-        $birthdate = $this->security->xss_clean($postData['birthdate'] ?? '');
-        $age = (int) $this->security->xss_clean($postData['age'] ?? 0);
-        $address = $this->security->xss_clean($postData['address'] ?? '');
-        $email = $this->security->xss_clean($postData['email'] ?? '');
-        $password = $this->security->xss_clean($postData['password'] ?? '');
-        $confirm_password = $this->security->xss_clean($postData['confirm_password'] ?? '');
+        $name = trim($this->security->xss_clean($postData['name'] ?? ''));
+        $birthdate = trim($this->security->xss_clean($postData['birthdate'] ?? ''));
+        $age = isset($postData['age']) ? (int) $postData['age'] : 0;
+        $address = trim($this->security->xss_clean($postData['address'] ?? ''));
+        $email = trim($this->security->xss_clean($postData['email'] ?? ''));
+        $phone = trim($this->security->xss_clean($postData['phone'] ?? ''));
+        $password = trim($this->security->xss_clean($postData['password'] ?? ''));
+        $confirm_password = trim($this->security->xss_clean($postData['confirm_password'] ?? ''));
+
+        // Debug: Log sanitized input
+        error_log("Sanitized Input: " . print_r([
+            "name" => $name, "birthdate" => $birthdate, "age" => $age,
+            "address" => $address, "email" => $email, "phone" => $phone,
+            "password" => $password, "confirm_password" => $confirm_password
+        ], true));
 
         // Validate input
-        if (empty($full_name) || empty($birthdate) || empty($age) || empty($address) || empty($email) || empty($password) || empty($confirm_password)) {
+        if (
+            empty($name) || empty($birthdate) || $age <= 0 ||
+            empty($address) || empty($email) || empty($password) || empty($confirm_password)
+        ) {
             echo json_encode(["status" => "error", "message" => "All fields are required"]);
             return;
         }
@@ -64,17 +76,19 @@ class RegisterController extends CI_Controller {
         // Hash password before saving
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
-        // Save user data
+        // Prepare user data for insertion
         $data = [
-            "name" => $full_name,
+            "name" => $name,
             "birthdate" => $birthdate,
             "age" => $age,
             "address" => $address,
             "email" => $email,
+            "phone" => $phone,
             "password" => $hashed_password,
             "created_at" => date('Y-m-d H:i:s')
         ];
 
+        // Insert user into the database
         $result = $this->User_model->insert_user($data);
 
         if ($result) {

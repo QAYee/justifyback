@@ -11,7 +11,7 @@ class User_model extends CI_Model {
     // Check if email already exists
     public function check_email_exists($email) {
         $this->db->where('email', $email);
-        $query = $this->db->get('user');
+        $query = $this->db->get('users');
         return $query->num_rows() > 0; // Returns true if email exists
     }
 
