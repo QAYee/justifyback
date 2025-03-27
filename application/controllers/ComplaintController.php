@@ -96,15 +96,28 @@ class ComplaintController extends CI_Controller {
     }
 
     public function getAllComplaints() {
-        header("Content-Type: application/json");
+    header("Content-Type: application/json");
 
-        $complaints = $this->ComplaintModel->get_all_complaints();
-        
-        if ($complaints) {
-            echo json_encode(['status' => true, 'complaints' => $complaints]);
-        } else {
-            echo json_encode(['status' => false, 'message' => 'No complaints found']);
+    // Get user_id from query parameters
+    $user_id = $this->input->get('user_id');
+
+    // Validate user_id if provided
+    if ($user_id !== null) {
+        if (!is_numeric($user_id)) {
+            http_response_code(400);
+            echo json_encode(['status' => false, 'message' => 'Invalid user ID']);
+            return;
         }
+        $complaints = $this->ComplaintModel->get_user_complaints($user_id);
+    } else {
+        $complaints = $this->ComplaintModel->get_all_complaints();
     }
+    
+    if ($complaints) {
+        echo json_encode(['status' => true, 'complaints' => $complaints]);
+    } else {
+        echo json_encode(['status' => false, 'message' => 'No complaints found']);
+    }
+}
 }
 ?>

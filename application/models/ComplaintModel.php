@@ -48,12 +48,11 @@ class ComplaintModel extends CI_Model {
      * @param int $complaint_id The ID of the complaint
      * @return array|null Complaint data or null if not found
      */
-    public function get_complaint_by_id($complaint_id) {
-        $this->db->where('id', $complaint_id);
-        $query = $this->db->get('complaints');
-        return $query->row_array();
+    public function get_user_complaints($user_id) {
+        $this->db->where('user_id', $user_id);
+        $query = $this->db->get('complaints');  // Replace 'complaints' with your actual table name
+        return $query->result_array();
     }
-
     /**
      * Delete a complaint by ID.
      * 
