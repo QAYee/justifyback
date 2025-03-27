@@ -66,7 +66,9 @@ class ComplaintModel extends CI_Model {
     }
 
     public function get_all_complaints() {
-        return $this->db->get('complaints')->result_array();
+        $this->db->order_by('id', 'DESC');
+        $query = $this->db->get('complaints');
+        return $query->result_array();
     }
     
 }
