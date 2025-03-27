@@ -13,6 +13,7 @@ class ComplaintController extends CI_Controller {
         parent::__construct();
         $this->load->model('ComplaintModel');
         $this->load->library('form_validation');
+        $this->load->helper('url');
     }
 
     public function create() {
@@ -119,5 +120,83 @@ class ComplaintController extends CI_Controller {
         echo json_encode(['status' => false, 'message' => 'No complaints found']);
     }
 }
+
+    public function updateStatus() {
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            http_response_code(200);
+            exit;
+        }
+
+        header("Content-Type: application/json");
+
+        $inputJSON = file_get_contents('php://input');
+        $data = json_decode($inputJSON, true);
+
+        // Validate input
+        if (!isset($data['complaint_id']) || !isset($data['status'])) {
+            http_response_code(400);
+            echo json_encode([
+                'status' => false,
+                'message' => 'Missing required fields'
+            ]);
+            return;
+        }
+
+        // Validate status value
+        $valid_statuses = ['pending', 'processing', 'resolved', 'rejected'];
+        if (!in_array($data['status'], $valid_statuses)) {
+            http_response_code(422);
+            echo json_encode([
+                'status' => false,
+                'message' => 'Invalid status value'
+            ]);
+            return;
+        }
+
+        try {
+            // Begin transaction
+            $this->db->trans_start();
+
+            // Get current status before update
+            $old_status = $this->ComplaintModel->getComplaintStatus($data['complaint_id']);
+            
+            // Update complaint status
+            $result = $this->ComplaintModel->updateStatus(
+                $data['complaint_id'],
+                $data['status']
+            );
+
+            // Log the status change
+            $log_data = [
+                'complaint_id' => $data['complaint_id'],
+                'old_status' => $old_status,
+                'new_status' => $data['status'],
+                'changed_by' => $this->session->userdata('user_id') ?? 1,
+                'changed_at' => date('Y-m-d H:i:s')
+            ];
+            
+            $this->ComplaintModel->logStatusChange($log_data);
+
+            $this->db->trans_complete();
+
+            if ($this->db->trans_status() === FALSE) {
+                throw new Exception('Failed to update status');
+            }
+
+            http_response_code(200);
+            echo json_encode([
+                'status' => true,
+                'message' => 'Status updated successfully'
+            ]);
+
+        } catch (Exception $e) {
+            $this->db->trans_rollback();
+            http_response_code(500);
+            echo json_encode([
+                'status' => false,
+                'message' => $e->getMessage()
+            ]);
+        }
+    }
 }
 ?>
