@@ -25,7 +25,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 */
 // $config['base_url'] = 'http://192.168.0.148/Justify';
 
-$config['base_url'] = 'http://justify.test/';
+$config['base_url'] = 'http://127.0.0.1/justify/';
 
 
 /*
