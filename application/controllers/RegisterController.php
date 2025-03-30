@@ -65,7 +65,7 @@ class RegisterController extends CI_Controller {
             return;
         }
 
-        // Handle image upload
+        // Handle image uploads
         $image = null;
         if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
             $config['upload_path'] = './uploads/images/';
