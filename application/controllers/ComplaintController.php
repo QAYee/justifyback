@@ -21,9 +21,9 @@ class ComplaintController extends CI_Controller {
             http_response_code(200);
             exit;
         }
-
+    
         header("Content-Type: application/json");
-
+    
         // Get form data
         $user_id = $this->input->post('user_id');
         $complainant = $this->input->post('complainant');
@@ -31,14 +31,14 @@ class ComplaintController extends CI_Controller {
         $details = $this->input->post('details');
         $incident_date = $this->input->post('incident_date');
         $complaint_type = $this->input->post('complaint_type');
-
+    
         // Validate required fields
         if (!$user_id || !$complainant || !$respondent || !$details || !$incident_date || !$complaint_type) {
             http_response_code(400);
             echo json_encode(['status' => false, 'message' => 'All required fields must be filled']);
             return;
         }
-
+    
         // Handle image upload if present
         $image = null;
         if (isset($_FILES['image']) && $_FILES['image']['error'] === 0) {
@@ -46,14 +46,14 @@ class ComplaintController extends CI_Controller {
             $config['allowed_types'] = 'gif|jpg|jpeg|png';
             $config['max_size'] = 2048; // 2MB max
             $config['file_name'] = uniqid('complaint_');
-
+    
             // Create directory if it doesn't exist
             if (!is_dir($config['upload_path'])) {
                 mkdir($config['upload_path'], 0777, true);
             }
-
+    
             $this->upload->initialize($config);
-
+    
             if (!$this->upload->do_upload('image')) {
                 http_response_code(400);
                 echo json_encode([
@@ -62,11 +62,11 @@ class ComplaintController extends CI_Controller {
                 ]);
                 return;
             }
-
+    
             $upload_data = $this->upload->data();
             $image = $upload_data['file_name'];
         }
-
+    
         try {
             // Prepare complaint data
             $complaintData = [
@@ -77,12 +77,12 @@ class ComplaintController extends CI_Controller {
                 'incident_date' => $incident_date,
                 'complaint_type' => $complaint_type,
                 'image' => $image,
-                'status' => 'pending',
+                'status' => 'New', // Status automatically set to "New"
                 'created_at' => date('Y-m-d H:i:s')
             ];
-
+    
             $result = $this->ComplaintModel->insert_complaint($complaintData);
-
+    
             if ($result) {
                 http_response_code(201);
                 echo json_encode([
@@ -148,12 +148,12 @@ class ComplaintController extends CI_Controller {
             http_response_code(200);
             exit;
         }
-
+    
         header("Content-Type: application/json");
-
+    
         $inputJSON = file_get_contents('php://input');
         $data = json_decode($inputJSON, true);
-
+    
         // Validate input
         if (!isset($data['complaint_id']) || !isset($data['status'])) {
             http_response_code(400);
@@ -163,9 +163,9 @@ class ComplaintController extends CI_Controller {
             ]);
             return;
         }
-
-        // Validate status value
-        $valid_statuses = ['pending', 'processing', 'resolved', 'rejected'];
+    
+        // Validate status value based on frontend STATUS_OPTIONS
+        $valid_statuses = ['New', 'Under review', 'In progress', 'Resolved', 'Closed', 'Rejected'];
         if (!in_array($data['status'], $valid_statuses)) {
             http_response_code(422);
             echo json_encode([
@@ -174,13 +174,13 @@ class ComplaintController extends CI_Controller {
             ]);
             return;
         }
-
+    
         try {
             $result = $this->ComplaintModel->updateStatus(
                 $data['complaint_id'],
                 $data['status']
             );
-
+    
             if ($result) {
                 echo json_encode([
                     'status' => true,
@@ -197,7 +197,6 @@ class ComplaintController extends CI_Controller {
             ]);
         }
     }
-
     protected function validate_date($date) {
         return !empty($date) && strtotime($date) !== false;
     }
