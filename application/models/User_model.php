@@ -51,4 +51,12 @@ class User_model extends CI_Model {
         return $query->row_array(); // Return user data as an associative array
     }
     
+    /**
+     * Get total count of users
+     * 
+     * @return int Count of users
+     */
+    public function get_users_count() {
+        return $this->db->count_all_results('users');
+    }
 }
