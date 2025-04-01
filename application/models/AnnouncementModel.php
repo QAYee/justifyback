@@ -138,11 +138,12 @@ class AnnouncementModel extends CI_Model {
      * @return array
      */
     public function get_user_announcements($user_id) {
-        $this->db->select('a.*, ar.is_read, ar.read_at');
+        // Either user is a direct recipient OR announcement is marked as target_all
+        $this->db->select('a.*, IFNULL(ar.is_read, 0) as is_read');
         $this->db->from('announcements a');
-        $this->db->join('announcement_recipients ar', 'a.id = ar.announcement_id', 'left');
-        $this->db->where('ar.user_id', $user_id);
-        $this->db->or_where('a.target_all', 1);
+        $this->db->join('announcement_recipients ar', 'a.id = ar.announcement_id AND ar.user_id = ' . $user_id, 'left');
+        $this->db->where('(ar.user_id = ' . $user_id . ' OR a.target_all = 1)');
+        $this->db->where('a.contentType', 'announcement'); // Make sure we only get announcements
         $this->db->order_by('a.created_at', 'DESC');
         
         $query = $this->db->get();

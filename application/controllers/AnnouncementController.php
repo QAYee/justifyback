@@ -198,14 +198,32 @@ class AnnouncementController extends CI_Controller {
         }
         
         try {
-            // Get announcements for this user
+            // Log request for debugging
+            log_message('debug', "Fetching announcements for user ID: $user_id");
+            
+            // Get announcements for this user, including read status
             $announcements = $this->AnnouncementModel->get_user_announcements($user_id);
+            
+            // Format the response with explicit read status
+            $formatted_announcements = [];
+            foreach ($announcements as $announcement) {
+                // Ensure is_read is properly set (default to 0 if null)
+                $is_read = isset($announcement['is_read']) ? (int)$announcement['is_read'] : 0;
+                
+                $formatted_announcements[] = array_merge($announcement, [
+                    'is_read' => $is_read
+                ]);
+            }
+            
+            // Log response size for debugging
+            log_message('debug', "Returning " . count($formatted_announcements) . " announcements for user $user_id");
             
             echo json_encode([
                 'status' => true,
-                'announcements' => $announcements
+                'announcements' => $formatted_announcements
             ]);
         } catch (Exception $e) {
+            log_message('error', "Error fetching announcements for user $user_id: " . $e->getMessage());
             http_response_code(500);
             echo json_encode([
                 'status' => false,
@@ -433,6 +451,9 @@ class AnnouncementController extends CI_Controller {
             ]);
         }
     }
+    
 }
+
+
 
 
