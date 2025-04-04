@@ -29,7 +29,9 @@ class RegisterController extends CI_Controller {
         $email = $this->input->post('email');
         $phone = $this->input->post('phone');
         $password = $this->input->post('password');
-        $confirm_password = $this->input->post('confirm_password');
+        $verification_code = $this->input->post('verification_code');
+        $verified = $this->input->post('verified');
+        $admin = $this->input->post('admin');
 
         // Sanitize input
         $name = trim($this->security->xss_clean($name));
@@ -39,12 +41,14 @@ class RegisterController extends CI_Controller {
         $email = trim($this->security->xss_clean($email));
         $phone = trim($this->security->xss_clean($phone));
         $password = trim($this->security->xss_clean($password));
-        $confirm_password = trim($this->security->xss_clean($confirm_password));
+        $verification_code = trim($this->security->xss_clean($verification_code));
+        $verified = (int) $verified;
+        $admin = (int) $admin;
 
         // Validate input
         if (
             empty($name) || empty($birthdate) || $age <= 0 ||
-            empty($address) || empty($email) || empty($password) || empty($confirm_password)
+            empty($address) || empty($email) || empty($password)
         ) {
             echo json_encode(["status" => "error", "message" => "All fields are required"]);
             return;
@@ -52,11 +56,6 @@ class RegisterController extends CI_Controller {
 
         if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             echo json_encode(["status" => "error", "message" => "Invalid email format"]);
-            return;
-        }
-
-        if ($password !== $confirm_password) {
-            echo json_encode(["status" => "error", "message" => "Passwords do not match"]);
             return;
         }
 
@@ -105,6 +104,9 @@ class RegisterController extends CI_Controller {
             "phone" => $phone,
             "password" => $hashed_password,
             "image" => $image,
+            "verification_code" => $verification_code,
+            "verified" => $verified,
+            "admin" => $admin,
             "created_at" => date('Y-m-d H:i:s')
         ];
 
