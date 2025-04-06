@@ -17,7 +17,7 @@ class ComplaintModel extends CI_Model {
     public function insert_complaint($data) {
         // Ensure incident_date is correctly formatted
         if (isset($data['incident_date'])) {
-            $data['incident_date'] = date('Y-m-d', strtotime($data['incident_date']));
+            $data['incident_date'] = date('Y-m-d H:i:s', strtotime($data['incident_date']));
         }
 
         $this->db->insert('complaints', $data);

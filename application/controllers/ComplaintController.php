@@ -126,7 +126,9 @@ class ComplaintController extends CI_Controller {
                 if (!empty($complaint['image'])) {
                     $complaint['image_url'] = base_url('uploads/complaints/' . $complaint['image']);
                 }
-                $complaint['incident_date'] = date('Y-m-d', strtotime($complaint['incident_date']));
+                // Convert to PHT (Philippine Time)
+                date_default_timezone_set('Asia/Manila');
+                $complaint['incident_date'] = date('Y-m-d H:i:s', strtotime($complaint['incident_date']));
                 $complaint['created_at'] = date('Y-m-d H:i:s', strtotime($complaint['created_at']));
             }
 
