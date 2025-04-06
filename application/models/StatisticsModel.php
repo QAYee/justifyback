@@ -147,19 +147,39 @@ class StatisticsModel extends CI_Model {
         $query = $this->db->query($sql, $params);
         $result = $query->result_array();
         
-        // Make sure all types are represented
-        $types = ['1', '2', '3', '4', '5'];
-        $formatted_result = [];
+        // Define expected complaint types based on the controller's valid types
+        $expected_types = [
+            'Noise Complaint',
+            'Property Dispute',
+            'Public Disturbance',
+            'Utility Issue',
+            'Environmental Concern',
+            'Vandalism',
+            'Illegal Construction',
+            'Parking Violation',
+            'Animal Complaint',
+            'Others'
+        ];
         
-        foreach ($types as $type) {
+        // Make sure all types are represented
+        $formatted_result = [];
+        $others_count = 0;
+        $processed_rows = [];
+        
+        // First, process all known types
+        foreach ($expected_types as $type) {
+            if ($type === 'Others') continue; // Skip Others for now, we'll add it at the end
+            
             $found = false;
-            foreach ($result as $row) {
-                if ($row['type'] == $type) {
+            foreach ($result as $index => $row) {
+                // Compare case-insensitive
+                if (strcasecmp($row['type'], $type) == 0) {
                     $formatted_result[] = [
-                        'type' => $type,
+                        'type' => $type, // Use standardized type name
                         'count' => (int)$row['count']
                     ];
                     $found = true;
+                    $processed_rows[] = $index;
                     break;
                 }
             }
@@ -171,6 +191,19 @@ class StatisticsModel extends CI_Model {
                 ];
             }
         }
+        
+        // Now add up all the complaint types that don't match our expected types into "Others"
+        foreach ($result as $index => $row) {
+            if (!in_array($index, $processed_rows)) {
+                $others_count += (int)$row['count'];
+            }
+        }
+        
+        // Add Others to the formatted result
+        $formatted_result[] = [
+            'type' => 'Others',
+            'count' => $others_count
+        ];
         
         return $formatted_result;
     }

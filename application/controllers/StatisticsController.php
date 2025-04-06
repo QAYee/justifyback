@@ -116,16 +116,53 @@ class StatisticsController extends CI_Controller {
         }
     }
     
-    private function map_complaint_type($type_id) {
-        $complaint_types = [
-            '1' => 'Noise Complaint',
-            '2' => 'Property Dispute',
-            '3' => 'Public Disturbance',
-            '4' => 'Maintenance Issue',
-            '5' => 'Other'
+    private function map_complaint_type($type_name) {
+        // List of valid complaint types
+        $valid_complaint_types = [
+            'Noise Complaint',
+            'Property Dispute',
+            'Public Disturbance',
+            'Utility Issue',
+            'Environmental Concern',
+            'Vandalism',
+            'Illegal Construction',
+            'Parking Violation',
+            'Animal Complaint',
+            'Others'
         ];
         
-        return isset($complaint_types[$type_id]) ? $complaint_types[$type_id] : 'Unknown';
+        // Trim and standardize the input
+        $type_name = trim($type_name);
+        
+        // Direct match - if the type name is already a valid complaint type (case-insensitive)
+        foreach ($valid_complaint_types as $valid_type) {
+            if (strcasecmp($type_name, $valid_type) == 0) {
+                return $valid_type; // Return with proper capitalization
+            }
+        }
+        
+        // Partial match for cases like "property" matching "Property Dispute"
+        $type_lower = strtolower($type_name);
+        $mapping = [
+            'noise' => 'Noise Complaint',
+            'property' => 'Property Dispute',
+            'disturbance' => 'Public Disturbance',
+            'utility' => 'Utility Issue',
+            'environmental' => 'Environmental Concern',
+            'vandalism' => 'Vandalism',
+            'construction' => 'Illegal Construction',
+            'parking' => 'Parking Violation',
+            'animal' => 'Animal Complaint',
+            'other' => 'Others'
+        ];
+        
+        foreach ($mapping as $key => $value) {
+            if (strpos($type_lower, $key) !== false) {
+                return $value;
+            }
+        }
+        
+        return 'Others';
     }
 }
 ?>
