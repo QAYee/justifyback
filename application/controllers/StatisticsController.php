@@ -34,18 +34,31 @@ class StatisticsController extends CI_Controller {
             $by_status = $this->StatisticsModel->get_complaints_by_status($year, $month);
             $by_type = $this->StatisticsModel->get_complaints_by_type($year, $month);
             
+            // Get daily data if month is specified
+            $daily = null;
+            if ($month) {
+                $daily = $this->StatisticsModel->get_daily_complaints($year, $month);
+            }
+            
             // Map numeric complaint types to readable names
             foreach ($by_type as &$item) {
                 $item['type'] = $this->map_complaint_type($item['type']);
             }
             
-            echo json_encode([
+            $response = [
                 'status' => true,
                 'total' => $total,
                 'monthly' => $monthly,
                 'byStatus' => $by_status,
                 'byType' => $by_type
-            ]);
+            ];
+            
+            // Add daily data to response if available
+            if ($daily !== null) {
+                $response['daily'] = $daily;
+            }
+            
+            echo json_encode($response);
             
         } catch (Exception $e) {
             http_response_code(500);
@@ -74,12 +87,25 @@ class StatisticsController extends CI_Controller {
             $monthly = $this->StatisticsModel->get_monthly_users($year, $month);
             $by_role = $this->StatisticsModel->get_users_by_role($year, $month);
             
-            echo json_encode([
+            // Get daily data if month is specified
+            $daily = null;
+            if ($month) {
+                $daily = $this->StatisticsModel->get_daily_users($year, $month);
+            }
+            
+            $response = [
                 'status' => true,
                 'total' => $total,
                 'monthly' => $monthly,
                 'byRole' => $by_role
-            ]);
+            ];
+            
+            // Add daily data to response if available
+            if ($daily !== null) {
+                $response['daily'] = $daily;
+            }
+            
+            echo json_encode($response);
             
         } catch (Exception $e) {
             http_response_code(500);

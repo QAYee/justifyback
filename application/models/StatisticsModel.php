@@ -315,5 +315,41 @@ class StatisticsModel extends CI_Model {
         
         return $formatted_result;
     }
+
+    /**
+     * Get daily complaint statistics for a specific year and month
+     */
+    public function get_daily_complaints($year, $month) {
+        // Convert month name to month number
+        $month_num = date('m', strtotime("1 $month"));
+        
+        $this->db->select("DAY(created_at) as day, DATE_FORMAT(created_at, '%d %b') as date, COUNT(*) as count");
+        $this->db->from('complaints');
+        $this->db->where('YEAR(created_at)', $year);
+        $this->db->where('MONTH(created_at)', $month_num);
+        $this->db->group_by('DAY(created_at)');
+        $this->db->order_by('DAY(created_at)', 'ASC');
+        
+        $query = $this->db->get();
+        return $query->result_array();
+    }
+
+    /**
+     * Get daily user registration statistics for a specific year and month
+     */
+    public function get_daily_users($year, $month) {
+        // Convert month name to month number
+        $month_num = date('m', strtotime("1 $month"));
+        
+        $this->db->select("DAY(created_at) as day, DATE_FORMAT(created_at, '%d %b') as date, COUNT(*) as count");
+        $this->db->from('users');
+        $this->db->where('YEAR(created_at)', $year);
+        $this->db->where('MONTH(created_at)', $month_num);
+        $this->db->group_by('DAY(created_at)');
+        $this->db->order_by('DAY(created_at)', 'ASC');
+        
+        $query = $this->db->get();
+        return $query->result_array();
+    }
 }
 ?>
