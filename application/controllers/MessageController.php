@@ -146,6 +146,89 @@ class MessageController extends CI_Controller {
         }
     }
 
+    public function sendAutoResponse() {
+        header('Content-Type: application/json');
+
+        if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+            http_response_code(200);
+            exit;
+        }
+
+        // Parse the input
+        $inputJSON = file_get_contents('php://input');
+        $input = json_decode($inputJSON, TRUE);
+        
+        // Validate required fields
+        if (!$input || 
+            !isset($input['user_id']) || 
+            !isset($input['message']) || 
+            !isset($input['is_admin'])) {
+            http_response_code(400);
+            echo json_encode([
+                'status' => false,
+                'message' => 'Missing required fields'
+            ]);
+            return;
+        }
+        
+        try {
+            $userId = $input['user_id'];
+            $message = $input['message'];
+            $isAdmin = $input['is_admin'];
+            $inResponseTo = isset($input['in_response_to']) ? $input['in_response_to'] : null;
+            
+            // Get or create a conversation
+            $conversation = $this->MessageModel->get_or_create_conversation($userId);
+            
+            if (!$conversation) {
+                throw new Exception('Could not create or retrieve conversation');
+            }
+            
+            // Set timezone to GMT+8
+            date_default_timezone_set('Asia/Manila');
+            
+            $messageData = [
+                'conversation_id' => $conversation['id'],
+                'sender_id' => $userId,
+                'is_admin' => (bool)$isAdmin ? 1 : 0,
+                'message' => trim($message),
+                'status' => 'sent',
+                'timestamp' => date('Y-m-d H:i:s')
+            ];
+    
+            $messageId = $this->MessageModel->insert_message($messageData);
+            
+            // If there's a message this is responding to, update its status
+            if ($inResponseTo) {
+                $this->MessageModel->update_message_status($inResponseTo, 'read');
+            }
+    
+            if ($messageId) {
+                http_response_code(201);
+                echo json_encode([
+                    'status' => true,
+                    'message' => 'Auto-response sent successfully',
+                    'data' => [
+                        'id' => $messageId,
+                        'text' => $messageData['message'],
+                        'senderId' => (int)$messageData['sender_id'],
+                        'isAdmin' => (bool)$messageData['is_admin'],
+                        'timestamp' => $messageData['timestamp'],
+                        'status' => $messageData['status']
+                    ]
+                ]);
+            } else {
+                throw new Exception('Failed to send auto-response');
+            }
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode([
+                'status' => false,
+                'message' => 'Error sending auto-response: ' . $e->getMessage()
+            ]);
+        }
+    }
+
     public function updateMessageStatus() {
         header('Content-Type: application/json');
 
