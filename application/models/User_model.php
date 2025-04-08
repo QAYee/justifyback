@@ -115,4 +115,16 @@ class User_model extends CI_Model {
         
         return $this->db->count_all_results('users');
     }
+
+    /**
+     * Update user information
+     * 
+     * @param int $userId User ID
+     * @param array $data Data to update
+     * @return bool Success status
+     */
+    public function update_user($userId, $data) {
+        $this->db->where('id', $userId);
+        return $this->db->update('users', $data);
+    }
 }
