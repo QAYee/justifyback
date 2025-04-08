@@ -75,10 +75,10 @@ $query_builder = TRUE;
 
 $db['default'] = array(
 	'dsn'	=> '',
-	'hostname' => 'localhost',
-	'username' => 'root',
-	'password' => '',
-	'database' => 'justify_db',
+	'hostname' => 'sql212.infinityfree.com',
+	'username' => 'if0_38702075',
+	'password' => 'SyvcXqQ3Qsz50kp',
+	'database' => 'if0_38702075_justify_db',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => FALSE,
@@ -93,4 +93,24 @@ $db['default'] = array(
 	'stricton' => FALSE,
 	'failover' => array(),
 	'save_queries' => TRUE
+
+	// 'dsn'	=> '',
+	// 'hostname' => 'localhost',
+	// 'username' => 'root',
+	// 'password' => '',
+	// 'database' => 'justify_db',
+	// 'dbdriver' => 'mysqli',
+	// 'dbprefix' => '',
+	// 'pconnect' => FALSE,
+	// 'db_debug' => (ENVIRONMENT !== 'production'),
+	// 'cache_on' => FALSE,
+	// 'cachedir' => '',
+	// 'char_set' => 'utf8',
+	// 'dbcollat' => 'utf8_general_ci',
+	// 'swap_pre' => '',
+	// 'encrypt' => FALSE,
+	// 'compress' => FALSE,
+	// 'stricton' => FALSE,
+	// 'failover' => array(),
+	// 'save_queries' => TRUE
 );
